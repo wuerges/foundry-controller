@@ -45,16 +45,12 @@ def run_me
   route53_client = Aws::Route53::Client.new(region: region) 
   
   resp = ec2_client.start_instances({ instance_ids: ['i-062b6c0d9bc25b166']})
-  puts resp
   
-  while !get_instance_ip(ec2_client, 'i-062b6c0d9bc25b166')
-    puts "waiting for ip of instance..."
-    sleep 1
-  end
-
   ip_of_instance = get_instance_ip(ec2_client, 'i-062b6c0d9bc25b166')
 
-  resp = update_ip_of_record(route53_client, 'Z06031063HJSRMN2Z5VCQ', 'kapparpg.wu.dev.br', ip_of_instance) 
+  resp = ip_of_instance ? 
+    update_ip_of_record(route53_client, 'Z06031063HJSRMN2Z5VCQ', 'kapparpg.wu.dev.br', ip_of_instance) : 
+    nil
   return { ip_of_instance: ip_of_instance, update_ip_of_record: resp }
 end
 
