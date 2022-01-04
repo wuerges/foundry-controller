@@ -7,6 +7,7 @@ const STARTED = "Started";
 
 function App() {
   const [status, setStatus] = useState(CHECKING);
+  const [instanceInfo, setInstanceInfo] = useState({});
 
   const checkStatus = async (e) => {
     switch (status) {
@@ -21,9 +22,9 @@ function App() {
     );
     const data = await response.json();
 
+    setInstanceInfo(JSON.parse(data.ip_of_instance));
+
     console.log(data);
-    const message = JSON.parse(data.message);
-    console.log(message);
   };
 
   return (

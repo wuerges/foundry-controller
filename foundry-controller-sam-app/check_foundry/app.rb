@@ -3,18 +3,24 @@ require 'json'
 require 'aws-sdk-route53'
 require 'aws-sdk-ec2'
 
-def get_instance_ip(ec2_client, instance_id)
+def get_instance_info(ec2_client, instance_id)
   response = ec2_client.describe_instances(
     instance_ids: [instance_id]
   )
-  return response.reservations[0].instances[0].public_ip_address
+  instance = response.reservations[0].instances[0]
+
+  return { :launch_time => instance[:launch_time], :ipv_6_address=> instance[:ipv_6_address], :state => instance[:state][:name] }
 end
 
 def get_hosted_zone_params(route53_client, target_hosted_zone_id, target_record)
-  resp = route53_client.get_hosted_zone({
-    id: target_hosted_zone_id, 
-  })  
-  return resp
+
+  resp = route53_client.test_dns_answer({
+    hosted_zone_id: target_hosted_zone_id, # required
+    record_name: target_record, # required
+    record_type: "A", # required, accepts SOA, A, TXT, NS, CNAME, MX, NAPTR, PTR, SRV, SPF, AAAA, CAA, DS
+  })
+  
+  return { :record_name => resp[:record_name], :record_data => resp[:record_data] }
 end
 
 # Full example call:
@@ -24,10 +30,10 @@ def run_me
   ec2_client = Aws::EC2::Client.new(region: region)
   route53_client = Aws::Route53::Client.new(region: region) 
   
-  ip_of_instance = get_instance_ip(ec2_client, 'i-062b6c0d9bc25b166')
+  instance_info = get_instance_info(ec2_client, 'i-062b6c0d9bc25b166')
   hosted_zone_info = get_hosted_zone_params(route53_client, 'Z06031063HJSRMN2Z5VCQ', 'kapparpg.wu.dev.br')
 
-  return { ip_of_instance: ip_of_instance, update_ip_of_record: hosted_zone_info }
+  return { instance_info: instance_info.to_json , hosted_zone_info: hosted_zone_info.to_json }
 end
 
 def lambda_handler(event:, context:)
@@ -35,9 +41,11 @@ def lambda_handler(event:, context:)
 
   {
     statusCode: 200,
-    body: {
-      message: "#{results}",
-      # location: response.body
-    }.to_json
+    headers: {
+      "Access-Control-Allow-Headers" => "Content-Type",
+      "Access-Control-Allow-Origin" => "*",
+      "Access-Control-Allow-Methods" => "GET"
+    },
+    body: results.to_json
   }
 end
