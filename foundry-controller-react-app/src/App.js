@@ -2,6 +2,7 @@ import "./App.css";
 import { useState, useEffect } from "react";
 
 const CHECKING = "Checking";
+const WORKING = "Working";
 const CHECKED = "Checked";
 
 function App() {
@@ -9,14 +10,21 @@ function App() {
   const [instanceInfo, setInstanceInfo] = useState({});
 
   const doStart = async () => {
+    setStatus(WORKING);
     await fetch(
       "https://enj5pwv63b.execute-api.sa-east-1.amazonaws.com/Prod/start"
     );
+    setStatus(CHECKING);
   };
   const doStop = async () => {
+    setStatus(WORKING);
     await fetch(
       "https://enj5pwv63b.execute-api.sa-east-1.amazonaws.com/Prod/stop"
     );
+    setStatus(CHECKING);
+  };
+  const isChecking = () => {
+    return status === CHECKING;
   };
   const isStopped = () =>
     !!(
@@ -25,27 +33,20 @@ function App() {
       instanceInfo.instance_info.state === "stopped"
     );
 
-  useEffect(() => {
-    const timer = setInterval(async () => {
-      setStatus(CHECKING);
+  useEffect(async () => {
+    if (status !== CHECKING) return;
 
-      const response = await fetch(
-        "https://enj5pwv63b.execute-api.sa-east-1.amazonaws.com/Prod/check"
-      );
-      const data = await response.json();
+    const response = await fetch(
+      "https://enj5pwv63b.execute-api.sa-east-1.amazonaws.com/Prod/check"
+    );
+    const data = await response.json();
 
-      // {"instance_info":"{\"launch_time\":\"2022-01-04 17:43:58 UTC\",\"ipv_6_address\":null,\"state\":\"stopped\"}","hosted_zone_info":"{\"record_name\":\"kapparpg.wu.dev.br\",\"record_data\":[\"18.231.4.124\"]}"}
-
-      setInstanceInfo({
-        instance_info: JSON.parse(data.instance_info),
-        hosted_zone_info: JSON.parse(data.hosted_zone_info),
-      });
-      setStatus(CHECKED);
-    }, 5000);
-    return () => {
-      clearInterval(timer);
-    };
-  });
+    setInstanceInfo({
+      instance_info: JSON.parse(data.instance_info),
+      hosted_zone_info: JSON.parse(data.hosted_zone_info),
+    });
+    setStatus(CHECKED);
+  }, [status]);
 
   return (
     <div className="App">
@@ -73,10 +74,10 @@ function App() {
         </pre>
       </section>
       <section className="App-content">
-        <button disabled={!isStopped()} onClick={doStart}>
+        <button disabled={status !== CHECKED || !isStopped()} onClick={doStart}>
           Start
         </button>
-        <button disabled={isStopped()} onClick={doStop}>
+        <button disabled={status !== CHECKED || isStopped()} onClick={doStop}>
           Stop
         </button>
       </section>

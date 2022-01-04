@@ -13,11 +13,6 @@ Globals:
       - x86_64
     Handler: app.lambda_handler
     Runtime: ruby2.7
-  # Api:
-  #   Cors:
-  #     AllowMethods: "'GET'"
-  #     AllowOrigin: "'*'"
-  #     AllowHeaders: "'Origin'"
 
 Resources:
   StartFoundryFunction:
@@ -25,6 +20,7 @@ Resources:
     Properties:
       Role: arn:aws:iam::998571718234:role/serverless-start-stop-describe
       CodeUri: start_foundry/
+      Timeout: 30
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
