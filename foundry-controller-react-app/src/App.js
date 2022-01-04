@@ -23,9 +23,6 @@ function App() {
     );
     setStatus(CHECKING);
   };
-  const isChecking = () => {
-    return status === CHECKING;
-  };
   const isStopped = () =>
     !!(
       instanceInfo &&
@@ -33,19 +30,22 @@ function App() {
       instanceInfo.instance_info.state === "stopped"
     );
 
-  useEffect(async () => {
-    if (status !== CHECKING) return;
+  useEffect(() => {
+    const doUseEffect = async () => {
+      if (status !== CHECKING) return;
 
-    const response = await fetch(
-      "https://enj5pwv63b.execute-api.sa-east-1.amazonaws.com/Prod/check"
-    );
-    const data = await response.json();
+      const response = await fetch(
+        "https://enj5pwv63b.execute-api.sa-east-1.amazonaws.com/Prod/check"
+      );
+      const data = await response.json();
 
-    setInstanceInfo({
-      instance_info: JSON.parse(data.instance_info),
-      hosted_zone_info: JSON.parse(data.hosted_zone_info),
-    });
-    setStatus(CHECKED);
+      setInstanceInfo({
+        instance_info: JSON.parse(data.instance_info),
+        hosted_zone_info: JSON.parse(data.hosted_zone_info),
+      });
+      setStatus(CHECKED);
+    };
+    doUseEffect();
   }, [status]);
 
   return (
