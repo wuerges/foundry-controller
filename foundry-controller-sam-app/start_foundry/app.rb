@@ -56,9 +56,11 @@ def lambda_handler(event:, context:)
 
   {
     statusCode: 200,
-    body: {
-      # message: "Results: #{results}",
-      # location: response.body
-    }.to_json
+    headers: {
+      "Access-Control-Allow-Headers" => "Content-Type",
+      "Access-Control-Allow-Origin" => "*",
+      "Access-Control-Allow-Methods" => "GET"
+    },
+    body: {}.to_json
   }
 end
