@@ -42,6 +42,9 @@
   min-height: 10vh;
   min-width: 10vw;
 }
+.App-content > pre {
+  text-align: "left";
+}
 
 .App-link {
   color: #61dafb;

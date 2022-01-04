@@ -9,7 +9,7 @@ def get_instance_info(ec2_client, instance_id)
   )
   instance = response.reservations[0].instances[0]
 
-  return { :launch_time => instance[:launch_time], :ipv_6_address=> instance[:ipv_6_address], :state => instance[:state][:name] }
+  return { :launch_time => instance[:launch_time], :public_ip_address=> instance.public_ip_address, :state => instance[:state][:name] }
 end
 
 def get_hosted_zone_params(route53_client, target_hosted_zone_id, target_record)
