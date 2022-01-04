@@ -23,7 +23,7 @@ def update_ip_of_record(route53_client, target_hosted_zone_id, target_record, ta
                 value: target_ip, 
               }, 
             ], 
-            ttl: 300, 
+            ttl: 60, 
             type: "A", 
           }, 
         }, 
@@ -43,11 +43,12 @@ def run_me
   
   ec2_client.start_instances({ instance_ids: ['i-062b6c0d9bc25b166']})  
   
+  ip_of_instance = nil
   while !ip_of_instance
+    sleep 1
     ip_of_instance = get_instance_ip(ec2_client, 'i-062b6c0d9bc25b166')
   end
 
-  ip_of_instance = get_instance_ip(ec2_client, 'i-062b6c0d9bc25b166')
   update_ip_of_record(route53_client, 'Z06031063HJSRMN2Z5VCQ', 'kapparpg.wu.dev.br', ip_of_instance)
 end
 
